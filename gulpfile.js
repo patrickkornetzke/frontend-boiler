@@ -15,6 +15,7 @@ var imagemin = require('gulp-imagemin');
 var cache = require('gulp-cache');
 var del = require('del');
 var runSequence = require('run-sequence');
+var pug = require('gulp-pug');
 
 gulp.task('browserSync', function(){
     browserSync.init({
@@ -33,8 +34,20 @@ gulp.task('sass', function(){
         }))
 });
 
-gulp.task('watch', ['browserSync', 'sass'], function(){
+gulp.task('pug', function buildHTML(){
+    return gulp.src('app/views/**/*.pug')
+        .pipe(pug({
+            pretty: true
+        }))
+        .pipe(gulp.dest('app'))
+        .pipe(browserSync.reload({
+            stream: true
+        }))
+})
+
+gulp.task('watch', ['browserSync', 'sass', 'pug'], function(){
     gulp.watch('app/scss/**/*.scss', ['sass']);
+    gulp.watch('app/views/**/*.pug', ['pug']);
     // Reloads the browse whenever HTML or JS files change
     gulp.watch('app/*.html', browserSync.reload);
     gulp.watch('app/js/**/*.js', browserSync.reload);
@@ -73,7 +86,7 @@ gulp.task('cache:clear', function(){
 })
 
 gulp.task('default', function(){
-    runSequence(['sass', 'browserSync', 'watch'])
+    runSequence(['sass', 'pug', 'browserSync', 'watch'])
 })
 
 gulp.task('build', function(){
